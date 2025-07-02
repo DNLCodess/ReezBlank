@@ -300,7 +300,7 @@ export default function AdminProductForm({ product, onClose, onSave }) {
               {/* Price & Stock */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="price">Price ($)</Label>
+                  <Label htmlFor="price">Price (₦)</Label>
                   <Input
                     id="price"
                     type="number"

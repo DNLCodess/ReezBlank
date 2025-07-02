@@ -99,7 +99,7 @@ export default function CartPage() {
                     </h3>
                     <p className="text-gray-600">Size: {item.size}</p>
                     <p className="text-xl font-bold text-black">
-                      ${item.price}
+                      ₦{item.price}
                     </p>
                   </div>
 

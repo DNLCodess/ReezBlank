@@ -72,7 +72,7 @@ export default function ProductCard({ product, viewMode = "grid" }) {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-2xl font-bold text-black">
-                  ${product.price}
+                  ₦{product.price}
                 </span>
                 <div className="flex items-center gap-2">
                   <button

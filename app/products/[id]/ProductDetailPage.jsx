@@ -192,7 +192,7 @@ export default function ProductDetailPage({ productId }) {
       animate="visible"
       className="min-h-screen bg-cream py-8"
     >
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-6 pt-10">
         {/* Product section */}
         <div className="grid lg:grid-cols-2 gap-12 mb-16">
           {/* Image */}
@@ -243,7 +243,7 @@ export default function ProductDetailPage({ productId }) {
               </span>
             </div>
 
-            <p className="text-4xl font-bold">${product.price}</p>
+            <p className="text-4xl font-bold">₦{product.price}</p>
 
             <div>
               <h3 className="text-lg font-semibold">Size</h3>
@@ -297,7 +297,7 @@ export default function ProductDetailPage({ productId }) {
               onClick={handleAddToCart}
             >
               <ShoppingCart className="mr-2 h-5 w-5" />
-              Add to Cart - ${(product.price * quantity).toFixed(2)}
+              Add to Cart - ₦{(product.price * quantity).toFixed(2)}
             </Button>
 
             <Separator />

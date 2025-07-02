@@ -340,7 +340,7 @@ export default function AdminDashboard() {
                   {analytics.bestSelling.sales || 0} sales
                 </p>
                 <p className="text-green-600 font-semibold">
-                  ${analytics.bestSelling.price}
+                  ₦{analytics.bestSelling.price}
                 </p>
               </div>
             )}
@@ -362,7 +362,7 @@ export default function AdminDashboard() {
                   {analytics.lowestSelling.sales || 0} sales
                 </p>
                 <p className="text-red-600 font-semibold">
-                  ${analytics.lowestSelling.price}
+                  ₦{analytics.lowestSelling.price}
                 </p>
               </div>
             )}
@@ -424,7 +424,7 @@ export default function AdminDashboard() {
                     <td className="py-3 px-4 text-gray-600">
                       {product.category}
                     </td>
-                    <td className="py-3 px-4 text-black">${product.price}</td>
+                    <td className="py-3 px-4 text-black">₦{product.price}</td>
                     <td className="py-3 px-4 text-gray-600">{product.stock}</td>
                     <td className="py-3 px-4 text-gray-600">
                       {product.sales || 0}
