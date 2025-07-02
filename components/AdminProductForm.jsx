@@ -69,16 +69,14 @@ export default function AdminProductForm({ product, onClose, onSave }) {
       !formData.price ||
       isNaN(formData.price) ||
       parseFloat(formData.price) <= 0
-    ) {
+    )
       newErrors.price = "Valid price is required";
-    }
     if (
       !formData.stock ||
       isNaN(formData.stock) ||
       parseInt(formData.stock) < 0
-    ) {
+    )
       newErrors.stock = "Valid stock quantity is required";
-    }
     if (!formData.image_url) newErrors.image_url = "Product image is required";
 
     setErrors(newErrors);
@@ -90,7 +88,9 @@ export default function AdminProductForm({ product, onClose, onSave }) {
 
     try {
       const fileExt = imageFile.name.split(".").pop();
-      const fileName = `${Math.random()}.${fileExt}`;
+      const fileName = `${Date.now()}-${Math.random()
+        .toString(36)
+        .substr(2, 9)}.${fileExt}`;
       const filePath = `products/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
@@ -98,32 +98,30 @@ export default function AdminProductForm({ product, onClose, onSave }) {
         .upload(filePath, imageFile);
 
       if (uploadError) {
-        console.error("Error uploading image:", uploadError);
-        return formData.image_url; // Return current URL if upload fails
+        toast.error(`Image upload failed: ${uploadError.message}`);
+        return formData.image_url;
       }
 
       const { data } = supabase.storage
         .from("product-images")
         .getPublicUrl(filePath);
 
-      return data.publicUrl;
-    } catch (error) {
-      console.error("Error uploading image:", error);
+      return data?.publicUrl || formData.image_url;
+    } catch (err) {
+      toast.error("Unexpected error during image upload");
       return formData.image_url;
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) return;
-
     setLoading(true);
 
     try {
       const imageUrl = await uploadImage();
 
-      const productData = {
+      const payload = {
         name: formData.name.trim(),
         description: formData.description.trim(),
         price: parseFloat(formData.price),
@@ -133,37 +131,29 @@ export default function AdminProductForm({ product, onClose, onSave }) {
         active: formData.active,
       };
 
+      let response;
       if (product) {
-        // Update existing product
-        const { error } = await supabase
+        response = await supabase
           .from("products")
-          .update(productData)
+          .update(payload)
           .eq("id", product.id);
-
-        if (error) {
-          console.error("Error updating product:", error);
-          toast.error("Failed to update product");
-          return;
-        }
-
-        toast.success("Product updated successfully!");
       } else {
-        // Create new product
-        const { error } = await supabase.from("products").insert([productData]);
-
-        if (error) {
-          console.error("Error creating product:", error);
-          toast.error("Failed to create product");
-          return;
-        }
-
-        toast.success("Product created successfully!");
+        response = await supabase.from("products").insert([payload]);
       }
 
+      if (response.error) {
+        toast.error(
+          `Failed to ${product ? "update" : "create"} product: ${
+            response.error.message
+          }`
+        );
+        return;
+      }
+
+      toast.success(`Product ${product ? "updated" : "created"} successfully`);
       onSave();
-    } catch (error) {
-      console.error("Error saving product:", error);
-      toast.error("An error occurred while saving the product");
+    } catch (err) {
+      toast.error("An unexpected error occurred while saving the product");
     } finally {
       setLoading(false);
     }
@@ -179,29 +169,29 @@ export default function AdminProductForm({ product, onClose, onSave }) {
         onClick={onClose}
       >
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
+          initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          exit={{ scale: 0.95, opacity: 0 }}
+          className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transition-all duration-300"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-black">
+              <h2 className="text-2xl font-semibold text-black">
                 {product ? "Edit Product" : "Add New Product"}
               </h2>
-              <Button variant="ghost" size="sm" onClick={onClose}>
+              <Button variant="ghost" size="icon" onClick={onClose}>
                 <X className="h-5 w-5" />
               </Button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Product Image */}
+              {/* Image */}
               <div>
                 <Label>Product Image</Label>
                 <div className="mt-2">
                   {formData.image_url ? (
-                    <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
+                    <div className="relative w-full h-48 bg-gray-100 rounded-xl overflow-hidden shadow-sm">
                       <img
                         src={formData.image_url}
                         alt="Product preview"
@@ -210,34 +200,38 @@ export default function AdminProductForm({ product, onClose, onSave }) {
                       <Button
                         type="button"
                         variant="ghost"
-                        size="sm"
+                        size="icon"
                         onClick={() =>
-                          setFormData((prev) => ({ ...prev, image_url: "" }))
+                          setFormData((p) => ({ ...p, image_url: "" }))
                         }
-                        className="absolute top-2 right-2 bg-white/80 hover:bg-white"
+                        className="absolute top-2 right-2 bg-white/90 hover:bg-white rounded-full shadow-md"
                       >
-                        <X className="h-4 w-4" />
+                        <X className="h-4 w-4 text-gray-700" />
                       </Button>
                     </div>
                   ) : (
-                    <div className="w-full h-48 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                    <div className="w-full h-48 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center bg-gray-50">
                       <div className="text-center">
-                        <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                        <p className="text-gray-500">No image selected</p>
+                        <ImageIcon className="h-10 w-10 text-gray-400 mx-auto mb-1" />
+                        <p className="text-sm text-gray-500">
+                          No image selected
+                        </p>
                       </div>
                     </div>
                   )}
 
-                  <div className="mt-2">
+                  <div className="mt-3 flex flex-col gap-2">
                     <Label htmlFor="image-upload" className="cursor-pointer">
                       <Button
                         type="button"
                         variant="outline"
-                        className="w-full"
+                        className="w-full text-sm font-medium hover:shadow-sm transition"
                         asChild
                       >
-                        <Upload className="h-4 w-4 mr-2" />
-                        Upload Image
+                        <span className="flex items-center justify-center">
+                          <Upload className="h-4 w-4 mr-2" />
+                          Upload Image
+                        </span>
                       </Button>
                     </Label>
                     <input
@@ -247,35 +241,33 @@ export default function AdminProductForm({ product, onClose, onSave }) {
                       onChange={handleImageChange}
                       className="hidden"
                     />
-                  </div>
-
-                  <div className="mt-2">
                     <Input
                       placeholder="Or paste image URL"
                       value={formData.image_url}
                       onChange={(e) =>
                         handleInputChange("image_url", e.target.value)
                       }
-                      className={errors.image_url ? "border-red-500" : ""}
+                      className={`rounded-md ${
+                        errors.image_url ? "border-red-500" : ""
+                      }`}
                     />
+                    {errors.image_url && (
+                      <p className="text-red-500 text-sm">{errors.image_url}</p>
+                    )}
                   </div>
-
-                  {errors.image_url && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.image_url}
-                    </p>
-                  )}
                 </div>
               </div>
 
-              {/* Product Name */}
+              {/* Name */}
               <div>
                 <Label htmlFor="name">Product Name</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
-                  className={errors.name ? "border-red-500" : ""}
+                  className={`${
+                    errors.name ? "border-red-500" : ""
+                  } rounded-md`}
                   placeholder="Enter product name"
                 />
                 {errors.name && (
@@ -292,7 +284,9 @@ export default function AdminProductForm({ product, onClose, onSave }) {
                   onChange={(e) =>
                     handleInputChange("description", e.target.value)
                   }
-                  className={errors.description ? "border-red-500" : ""}
+                  className={`${
+                    errors.description ? "border-red-500" : ""
+                  } rounded-md`}
                   placeholder="Enter product description"
                   rows={3}
                 />
@@ -303,7 +297,7 @@ export default function AdminProductForm({ product, onClose, onSave }) {
                 )}
               </div>
 
-              {/* Price and Stock */}
+              {/* Price & Stock */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="price">Price ($)</Label>
@@ -313,7 +307,9 @@ export default function AdminProductForm({ product, onClose, onSave }) {
                     step="0.01"
                     value={formData.price}
                     onChange={(e) => handleInputChange("price", e.target.value)}
-                    className={errors.price ? "border-red-500" : ""}
+                    className={`${
+                      errors.price ? "border-red-500" : ""
+                    } rounded-md`}
                     placeholder="0.00"
                   />
                   {errors.price && (
@@ -328,7 +324,9 @@ export default function AdminProductForm({ product, onClose, onSave }) {
                     type="number"
                     value={formData.stock}
                     onChange={(e) => handleInputChange("stock", e.target.value)}
-                    className={errors.stock ? "border-red-500" : ""}
+                    className={`${
+                      errors.stock ? "border-red-500" : ""
+                    } rounded-md`}
                     placeholder="0"
                   />
                   {errors.stock && (
@@ -346,18 +344,18 @@ export default function AdminProductForm({ product, onClose, onSave }) {
                   onChange={(e) =>
                     handleInputChange("category", e.target.value)
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
+                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gold transition"
                 >
-                  {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category.charAt(0).toUpperCase() + category.slice(1)}
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* Active Status */}
-              <div className="flex items-center space-x-2">
+              {/* Active Checkbox */}
+              <div className="flex items-center space-x-3">
                 <input
                   type="checkbox"
                   id="active"
@@ -365,25 +363,27 @@ export default function AdminProductForm({ product, onClose, onSave }) {
                   onChange={(e) =>
                     handleInputChange("active", e.target.checked)
                   }
-                  className="rounded"
+                  className="h-5 w-5 text-gold focus:ring-gold border-gray-300 rounded transition"
                 />
-                <Label htmlFor="active">Product is active</Label>
+                <Label htmlFor="active" className="text-gray-800 font-medium">
+                  Product is active
+                </Label>
               </div>
 
-              {/* Submit Buttons */}
+              {/* Buttons */}
               <div className="flex gap-3 pt-4">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={onClose}
-                  className="flex-1"
+                  className="flex-1 text-gray-700 border-gray-300 hover:bg-gray-100 transition"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-gold hover:bg-gold/90 text-black"
+                  className="flex-1 bg-gold hover:bg-gold/90 text-black font-semibold transition disabled:opacity-50"
                 >
                   {loading
                     ? "Saving..."

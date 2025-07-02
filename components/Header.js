@@ -56,14 +56,14 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-8">
-            {["Home", "Products", "AI LookOut"].map((item, index) => (
+            {["Home", "Products", "LookOut"].map((item, index) => (
               <Link
                 key={index}
                 href={`/${
                   item === "Home" ? "" : item.toLowerCase().replace(/\s/g, "")
                 }`}
                 className={`font-medium transition hover:text-gold ${
-                  isScrolled ? "text-black" : "text-white"
+                  isScrolled ? "text-black" : "text-black"
                 }`}
               >
                 {item}
@@ -79,7 +79,7 @@ export default function Header() {
                 className={`transition ${
                   isScrolled
                     ? "text-black hover:text-gold"
-                    : "text-white hover:text-gold"
+                    : "text-black hover:text-gold"
                 }`}
               >
                 <Icon className="h-5 w-5" />
@@ -91,7 +91,7 @@ export default function Header() {
                 className={`relative transition ${
                   isScrolled
                     ? "text-black hover:text-gold"
-                    : "text-white hover:text-gold"
+                    : "text-black hover:text-gold"
                 }`}
               >
                 <ShoppingBag className="h-5 w-5" />
@@ -107,7 +107,7 @@ export default function Header() {
               <div className="flex items-center space-x-2">
                 <span
                   className={`text-sm ${
-                    isScrolled ? "text-black" : "text-white"
+                    isScrolled ? "text-black" : "text-black"
                   }`}
                 >
                   {user.email}
@@ -125,7 +125,7 @@ export default function Header() {
                   <Button
                     variant="ghost"
                     className={`px-4 py-2 text-sm ${
-                      isScrolled ? "text-black" : "text-white"
+                      isScrolled ? "text-black" : "text-black"
                     } hover:text-gold`}
                   >
                     Sign In
@@ -144,7 +144,7 @@ export default function Header() {
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className={`lg:hidden transition ${
-              isScrolled ? "text-black" : "text-white"
+              isScrolled ? "text-black" : "text-black"
             }`}
           >
             {isMenuOpen ? (
